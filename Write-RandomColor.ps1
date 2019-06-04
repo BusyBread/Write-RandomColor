@@ -1,30 +1,41 @@
-Function Write-RandomColor {
-    <#
-        .DESCRIPTION
-        Write out every character in a string as a random color.
+<#
+    .DESCRIPTION
+    Write every character in a string as a random color.
 
-        .SYNTAX
-        Write-RandomColor -InputString "Hello World"
-        Write-RandomColor @(Get-Process)
-        Out-Color "Your String Here"
-    #>
-    [Alias('Out-Color')]
-    [CmdletBinding()]
+    .SYNTAX
+        Write-RandomColors -InputString @(Get-Process)
+        Write-RandomColors "WRITE THIS RANDOMLY"
+        Write-Colors "WRITE THIS RANDOMLY TOO"
+#>
+Function Write-RandomColors {
+    [Alias('Write-Colors')]
+    [cmdletbinding()]
     Param(
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-        $InputString
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $InputString 
     )
+    
     Try{
-        # Convert input to string, then to char array.
-        $InputString = ( $InputString | Out-String ).ToCharArray()
-        # Enumerate all console colors and filter out the current background color.
-        $FontColors = @( $( [Enum]::GetValues([ConsoleColor]) | ForEach-Object { If( $_ -notmatch $(Get-Host).UI.RawUI.BackgroundColor ){ $_ } } ) )
 
-        # Color each char randomly
-        ForEach( $Char in $InputString ){
-            $RandomColor = $FontColors[ $(Get-Random -Minimum 0 -Maximum $FontColors.Length ) ]
-            Write-Host $Char -NoNewline -ForegroundColor $RandomColor
+        $InputString = ( $InputString  | Out-String ).ToCharArray()
+
+        # Remove current backgroud color from list of available colors for better visabilbity
+        $SystemColors = @()
+        $Current_BG = (Get-Host).UI.RawUI.BackgroundColor
+        ForEach( $Color in [Enum]::GetValues([System.ConsoleColor]) ){
+           If ($Color -notmatch $Current_BG){
+               $SystemColors += $Color
+           }
+        }
+
+        # Loop through the provided input string and apply a random color to every character.
+        For( $i=0; $i -lt $InputString.Length; $i++){
+            $RandomColor = $SystemColors[ $(Get-Random -Minimum 0 -Maximum $SystemColors.Length ) ]
+            Write-Host $InputString[$i] -NoNewline -ForegroundColor $RandomColor
         }
     }
-    Catch{ $_.Exception.Message }
+    Catch{ 
+        Write-Host $_.Exception.Message -Fore Red
+     }
 }

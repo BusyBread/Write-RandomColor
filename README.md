@@ -7,4 +7,3 @@ Write out every charcter in a string as a random color.
 * Write-Colors "WRITE THIS RANDOMLY TOO"
 
 ### Images
-![Write-RandomColors Example](/images/sample1.PNG)
